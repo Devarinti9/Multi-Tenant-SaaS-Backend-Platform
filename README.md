@@ -35,5 +35,3 @@ docker compose up --build
 
 API will be available at `http://localhost:8082`
 
-## Resume Description
-Built a scalable multi-tenant backend platform to support user, organization, and access management across shared application environments, enabling secure and structured handling of multi-user workflows.
