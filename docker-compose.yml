@@ -1,25 +1,30 @@
-version: "3.9"
-
+version: '3.9'
 services:
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: saas_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5435:5432"
-    volumes:
-      - saas_postgres:/var/lib/postgresql/data
-
   api:
     build: .
+    container_name: saas-api
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: 8080
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/saas_db?sslmode=disable
+      JWT_SECRET: change-me
+      AWS_REGION: us-east-1
+      S3_BUCKET: saas-demo-bucket
     depends_on:
       - postgres
-    env_file:
-      - .env.example
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: saas-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: saas_db
     ports:
-      - "8082:8080"
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
-  saas_postgres:
+  pgdata:

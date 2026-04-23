@@ -13,7 +13,11 @@ func Connect(databaseURL string) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err := db.AutoMigrate(&models.Organization{}, &models.User{}); err != nil {
+	if err := db.AutoMigrate(
+		&models.Organization{},
+		&models.User{},
+		&models.ProjectMembership{},
+	); err != nil {
 		return nil, err
 	}
 

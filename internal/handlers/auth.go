@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type registerRequest struct {
+type RegisterRequest struct {
 	Name           string `json:"name"`
 	Email          string `json:"email"`
 	Password       string `json:"password"`
@@ -21,16 +21,19 @@ type registerRequest struct {
 	OrganizationID uint   `json:"organization_id"`
 }
 
-type loginRequest struct {
+type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 func Register(db *gorm.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var req registerRequest
+		var req RegisterRequest
 		if err := c.Bind(&req); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request"})
+		}
+		if req.Email == "" || req.Password == "" || req.OrganizationID == 0 {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "email, password, and organization_id are required"})
 		}
 
 		hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -56,7 +59,7 @@ func Register(db *gorm.DB) echo.HandlerFunc {
 
 func Login(db *gorm.DB, cfg config.Config) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var req loginRequest
+		var req LoginRequest
 		if err := c.Bind(&req); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request"})
 		}
@@ -73,6 +76,7 @@ func Login(db *gorm.DB, cfg config.Config) echo.HandlerFunc {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"user_id": user.ID,
 			"email":   user.Email,
+			"org_id":  user.OrganizationID,
 			"exp":     time.Now().Add(24 * time.Hour).Unix(),
 		})
 

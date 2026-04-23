@@ -8,7 +8,7 @@ import (
 
 	"multi-tenant-saas-backend-platform/internal/config"
 	"multi-tenant-saas-backend-platform/internal/db"
-	apiMiddleware "multi-tenant-saas-backend-platform/internal/middleware"
+	appmiddleware "multi-tenant-saas-backend-platform/internal/middleware"
 	"multi-tenant-saas-backend-platform/internal/routes"
 )
 
@@ -17,21 +17,21 @@ func main() {
 
 	database, err := db.Connect(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("database connection failed: %v", err)
 	}
 
 	e := echo.New()
+	e.HideBanner = true
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	e.GET("/health", func(c echo.Context) error {
-		return c.JSON(200, map[string]string{"status": "ok", "service": "multi-tenant-saas-backend-platform"})
-	})
+	e.GET("/health", routes.Health)
+	e.GET("/", routes.Index)
 
 	routes.RegisterPublicRoutes(e, database, cfg)
 	protected := e.Group("/api/v1")
-	protected.Use(apiMiddleware.JWTMiddleware(cfg.JWTSecret))
+	protected.Use(appmiddleware.JWTMiddleware(cfg.JWTSecret))
 	routes.RegisterProtectedRoutes(protected, database, cfg)
 
 	log.Printf("server running on %s", cfg.AppPort)

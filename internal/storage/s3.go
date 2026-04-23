@@ -50,6 +50,5 @@ func UploadOrganizationManifest(ctx context.Context, client *s3.Client, bucket s
 	if err != nil {
 		return "", err
 	}
-
 	return key, nil
 }
